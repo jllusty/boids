@@ -107,12 +107,15 @@ function updateAllBoids(boids: Boid[], dt: number) {
       boids[i].velocity = plus(boids[i].velocity, scalarMultiply(realignVelocityWithNearbyBoids, alignmentConstant));
     }
 
+    // the following update should have the Boids steer to avoid the edge of the spherical playground
+    const r = length(boids[i].position);
+    // if(boids[i].position < )0
     // stay within the limits of the playground
-    const turnConstant = 0.25;
-    const boxSize = 100;
-    if(length(boids[i].position) > boxSize) {
-      boids[i].velocity = minus(boids[i].velocity, scalarMultiply(normalize(boids[i].position), turnConstant));
-    }
+    // const turnConstant = 0.25;
+    // const boxSize = 100;
+    // if(length(boids[i].position) > boxSize) {
+    // boids[i].velocity = minus(boids[i].velocity, scalarMultiply(normalize(boids[i].position), turnConstant));
+    // }
 
     // step physics forward (integration step)
     update(boids[i], dt);

@@ -1,3 +1,4 @@
+import { truncate } from 'fs';
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 
@@ -39,6 +40,78 @@ for(let i = 0; i < numBoids; i++) {
     boids.push(boid);
 }
 
+// Configure event listeners for keyboard presses
+let spaceIsDown: boolean = false;
+let shiftIsDown: boolean = false;
+let manualPause: boolean = false;
+document.addEventListener('keydown', (event) => {
+    const name: string = event.key;
+    const code: string = event.code;
+    if(code === "Space") {
+        spaceIsDown = true;
+    }
+    else if(code === "ShiftLeft") {
+        shiftIsDown = true;
+    }
+    else if(code === "ShiftRight") {
+        if(clock.running) {
+            manualPause = true;
+            console.log("stopping physics clock");
+            clock.stop();
+        }
+        else {
+            manualPause = false;
+            console.log("restarting physics clock");
+            clock.start();
+        }
+    }
+}, false)
+document.addEventListener('keyup', (event) => {
+    const name: string = event.key;
+    const code: string = event.code;
+    if(code === "Space") {
+        spaceIsDown = false;
+    }
+    else if(code === "ShiftLeft") {
+        shiftIsDown = false;
+    }
+}, false)
+
+// physics clock
+const clock = new THREE.Clock(false);
+// Do not update physics if no one is looking at the page
+document.addEventListener("visibilitychange", (event) => {
+    if (document.visibilityState == "visible") {
+      if(!manualPause) {
+        console.log("starting physics clock");
+        clock.start();
+      }
+    } else {
+      console.log("stopping physics clock");
+      clock.stop();
+    }
+}, false);
+
+// if double click, manually pause
+let clickClock: THREE.Clock = new THREE.Clock();
+let deltaTimeClick = 0;
+clickClock.getDelta();
+document.addEventListener("click", (event) => {
+    deltaTimeClick = clickClock.getDelta();
+    if(deltaTimeClick < 0.3) {
+        if(clock.running) {
+            manualPause = true;
+            console.log("stopping physics clock");
+            clock.stop();
+        }
+        else {
+            manualPause = false;
+            console.log("restarting physics clock");
+            clock.start();
+        }
+    }
+}, false);
+
 // Each Boid is associated with a Mesh, though they should be separate objects
 const geometry = new THREE.BoxGeometry(1.0, 1.0, 1.0);
 const material = new THREE.MeshBasicMaterial( { color: 0x00ff00 } );
@@ -73,7 +146,6 @@ function onWindowResize() {
 
 // Globals
 const INV_MAX_FPS = 1 / 60;
-const clock = new THREE.Clock();
 // Time between rendering frames for the Boids
 let frameDelta = 0;
 
@@ -88,6 +160,14 @@ let frameDelta = 0;
 // 5 - Oriented boids (in the direction of their velocity)
 // 6 - Skybox for easier viewing
 
+// Q - Is this simulation reversible?
+// A - Could we swap every boid's velocity and apply 
+//     the flocking rules in the opposite direction for those updates?
+
+// Start Physics Clock
+clock.start();
+console.log("starting physics clock");
+
 // How to animate the Boids
 function animate() {
 	requestAnimationFrame( animate );
@@ -95,10 +175,30 @@ function animate() {
 	// Update Input / Controls
 	controls.update();
 
-    // Update Physics
+    // Update Physics if looking
     frameDelta += clock.getDelta();
     while (frameDelta >= INV_MAX_FPS) {
-        updateAllBoids(boids, INV_MAX_FPS); // includes an integrative step
+        // includes an integrative step
+        updateAllBoids(boids, INV_MAX_FPS); 
+
+        // pull all boids toward/away from a point (the origin, currently)
+        // the idea here is to be able to conveniently control the position of the swarm(s)
+        // currently one-off: pull boids 5% closer to the origin
+        const pullScalar = 0.5;
+        if(shiftIsDown && spaceIsDown) {
+            for(var boid of boids) {
+                boid.position.x += boid.position.x*pullScalar*INV_MAX_FPS;
+                boid.position.y += boid.position.y*pullScalar*INV_MAX_FPS;
+                boid.position.z += boid.position.z*pullScalar*INV_MAX_FPS;
+            }
+        }
+        else if(spaceIsDown) {
+            for(var boid of boids) {
+                boid.position.x -= boid.position.x*pullScalar*INV_MAX_FPS;
+                boid.position.y -= boid.position.y*pullScalar*INV_MAX_FPS;
+                boid.position.z -= boid.position.z*pullScalar*INV_MAX_FPS;
+            }
+        }
         frameDelta -= INV_MAX_FPS;
     }
 
