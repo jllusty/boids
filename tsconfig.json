@@ -1,0 +1,9 @@
+{
+  "compilerOptions": {
+      "module": "commonjs",
+      "target": "es5",
+      "lib": ["es5", "es6", "es2015", "DOM"],
+      "strict": true
+  },
+  "include": ["client.ts"]
+}
