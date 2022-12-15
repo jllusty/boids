@@ -109,6 +109,12 @@ function updateAllBoids(boids: Boid[], dt: number) {
 
     // the following update should have the Boids steer to avoid the edge of the spherical playground
     const r = length(boids[i].position);
+    const R = 100;
+    const turnConstant = 0.5;
+    if (r > 0.75*R) {
+      boids[i].velocity = minus(boids[i].velocity, scalarMultiply(normalize(boids[i].position), turnConstant));
+    }
+    
     // if(boids[i].position < )0
     // stay within the limits of the playground
     // const turnConstant = 0.25;
@@ -119,6 +125,11 @@ function updateAllBoids(boids: Boid[], dt: number) {
 
     // step physics forward (integration step)
     update(boids[i], dt);
+
+    // collision resolution: take the max vector
+    if (r >= R) {
+      boids[i].position = scalarMultiply(normalize(boids[i].position), R);
+    }
   }
 }
 

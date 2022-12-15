@@ -22,9 +22,9 @@ let boids: Boid[] = [];
 for(let i = 0; i < numBoids; i++) { 
     let randPoint = () => width * ( 2.0 * Math.random() - 1.0)
     // random position
-	const px = randPoint()
-	const py = randPoint()
-	const pz = randPoint()
+	const px = randPoint();
+	const py = randPoint();
+	const pz = randPoint();
     const pos = new THREE.Vector3(px, py, pz);
     // random orientation (useless currently)
     const ox = 0; //randPoint();
@@ -124,10 +124,10 @@ for(let i = 0; i < numBoids; i++) {
 }
 
 // limits of the playground mesh
-//const playgroundGeometry = new THREE.SphereGeometry(100, 16, 12);
-//const wireframe = new THREE.WireframeGeometry(playgroundGeometry);
-//const line = new THREE.LineSegments(wireframe);
-//scene.add(line);
+const playgroundGeometry = new THREE.SphereGeometry(100, 16, 12);
+const wireframe = new THREE.WireframeGeometry(playgroundGeometry);
+const line = new THREE.LineSegments(wireframe);
+scene.add(line);
 
 // Camera could be a Boid, that would be fun
 camera.position.x = 200.0;

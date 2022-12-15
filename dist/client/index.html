@@ -9,10 +9,52 @@
                 overflow: hidden;
                 margin: 0px;
             }
+            #info {
+                position: absolute;
+                bottom: 10px;
+                width: 100%;
+                text-align: center;
+                z-index: 100;
+                display:block;
+                color: rgb(0,255,0)
+            }
+            .physics-table {
+                margin-left: auto;
+                margin-right: auto;
+            }
         </style>
     </head>
 
     <body>
         <script type="module" src="bundle.js"></script>
+        <div id="info">
+            <table class="physics-table">
+                <tr>
+                    <td>
+                        <p>physicsConstant</p>
+                    </td>     
+                    <td>
+                        <input type="text" id="fname" name="fname">
+                    </td>
+                </tr> 
+                <tr>
+                    <td>
+                        <p>physicsConstant2</p>
+                    </td>     
+                    <td>
+                        <input type="text" id="fname" name="fname">
+                    </td>
+                </tr> 
+                <tr>
+                    <td>
+                        <p>physicsConstant3</p>
+                    </td>     
+                    <td>
+                        <input type="text" id="fname" name="fname">
+                    </td>
+                </tr> 
+            </table>
+            <input type="button" value="submit" onclick="msg()">
+        </div>
     </body>
 </html>
