@@ -5,16 +5,19 @@
   "scripts": {
     "build": "webpack --config ./src/client/webpack.prod.js",
     "dev": "webpack serve --config ./src/client/webpack.dev.js",
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "jest",
     "start": "node ./dist/server/server.js"
   },
   "author": "John Luke Lusty",
   "devDependencies": {
     "@types/dat.gui": "^0.7.7",
     "@types/express": "^4.17.14",
+    "@types/jest": "^29.2.4",
     "@types/node": "^18.11.9",
     "@types/three": "^0.146.0",
+    "jest": "^29.3.1",
     "three": "^0.146.0",
+    "ts-jest": "^29.0.3",
     "ts-loader": "^9.4.1",
     "typescript": "^4.8.4",
     "webpack": "^5.75.0",
@@ -23,6 +26,7 @@
     "webpack-merge": "^5.8.0"
   },
   "dependencies": {
-    "express": "^4.18.2"
+    "express": "^4.18.2",
+    "node": "^18.0.0"
   }
 }

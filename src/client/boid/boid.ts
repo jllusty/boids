@@ -1,3 +1,20 @@
+// simple export for testing unit testing
+export function sampleFunction(x: string): string {
+  return x + x;
+}
+
+// TODO(jllusty): scope with a 'declare namespace'
+// spatial indexing scheme
+interface index {
+  i: number,
+  j: number,
+  k: number
+}
+
+function toString(spatialIndex: index): string {
+  return "(" + spatialIndex.i.toString() + ", " + spatialIndex.j.toString() + ", " + spatialIndex.k.toString() + ")"
+}
+
 // 3-d vector Datatype
 interface vec3 {
   x: number,
@@ -22,11 +39,11 @@ function length(u: vec3): number {
   return Math.sqrt(dot(u,u));
 }
 
-function scalarMultiply(u: vec3, scalar: number) {
+function scalarMultiply(u: vec3, scalar: number): vec3 {
   return {x: u.x * scalar, y: u.y * scalar, z: u.z * scalar};
 }
 
-function scalarDivide(u: vec3, scalar: number) {
+function scalarDivide(u: vec3, scalar: number): vec3 {
   return {x: u.x / scalar, y: u.y / scalar, z: u.z / scalar};
 }
 
@@ -36,6 +53,11 @@ function normalize(u: vec3): vec3 {
 
 function average(vecs: vec3[]): vec3 {
   return scalarDivide(vecs.reduce((acc,vec) => plus(acc,vec)), vecs.length);
+}
+
+function spatialIndex(u: vec3): index {
+  const gridSize = {w: 10, h: 10, l: 10};
+  return {i: u.x/gridSize.w, j: u.y/gridSize.h, k: u.z/gridSize.l};
 }
 
 // Boid Datatype
@@ -50,7 +72,32 @@ interface Boid {
   velocity: vec3
 }
 
+// Box o' Boids
+// Spatially-indexed boids
+type grid = Map<index, Boid[]>;
+
 // tests for these too would be pretty sick
+// returns a spatial index for a boid
+function getSpatialIndexOfBoid(boid: Boid): index {
+  return spatialIndex(boid.position);
+}
+
+// mutates grid
+function addBoidToGrid(boid: Boid, g: grid) {
+  const spatialIndex = getSpatialIndexOfBoid(boid);
+  if(!g.has(spatialIndex)) {
+    g.set(spatialIndex, []);
+  }
+  g.get(getSpatialIndexOfBoid(boid))?.push(boid);
+}
+
+function createGrid(boids: Boid[]): grid {
+  const g: grid = new Map<index, Boid[]>();
+  boids.forEach((boid) => addBoidToGrid(boid,g));
+  return g;
+}
+
+// returns length of the displacement vector between two boids
 function distanceBetweenBoids(boid1: Boid, boid2: Boid): number {
   // displacement from boid1 to boid2
   return length(minus(boid1.position, boid2.position));
@@ -77,14 +124,21 @@ function update(boid: Boid, dt: number) {
 
 // collective (global) boid update
 function updateAllBoids(boids: Boid[], dt: number) {
+  // index each boid
+  const theGrid = createGrid(boids);
+  // theGrid.forEach((boids,spatialIndex) => console.log(toString(spatialIndex) + ": " + boids.length.toString()));
+
   // update each boid 
   for(let i = 0; i < boids.length; ++i) {
+    // get spatial index
+    // TODO(jllusty): use created grid to discern boids that are too close
+    const spatialIndex = getSpatialIndexOfBoid(boids[i]);
     // get nearby boids
     const nearbyBoids: Boid[] = getBoidsNearBoid(boids, boids[i], 20.0);
     const tooCloseBoids: Boid[] = getBoidsNearBoid(boids, boids[i], 5.0);
    
     // maintain separation from boids that are too close
-    if(tooCloseBoids.length > 0 ) {
+    if(tooCloseBoids !== undefined && tooCloseBoids.length > 0 ) {
       // 1. separation: avoid colliding into other boids, move away from their average position
       const separationConstant = 0.05;
       const avgPositionTooCloseBoids: vec3 = averagePosition(tooCloseBoids);
@@ -123,6 +177,12 @@ function updateAllBoids(boids: Boid[], dt: number) {
     // boids[i].velocity = minus(boids[i].velocity, scalarMultiply(normalize(boids[i].position), turnConstant));
     // }
 
+    // limit velocity
+    const V = 10.0;
+    //if(length(boids[i].velocity) > V) {
+    //  boids[i].velocity = scalarMultiply(normalize(boids[i].velocity), V);
+    //}
+
     // step physics forward (integration step)
     update(boids[i], dt);
 
@@ -130,6 +190,10 @@ function updateAllBoids(boids: Boid[], dt: number) {
     if (r >= R) {
       boids[i].position = scalarMultiply(normalize(boids[i].position), R);
     }
+
+    // give them something to chase
+
+
   }
 }
 
