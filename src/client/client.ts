@@ -1,8 +1,7 @@
-import { truncate } from 'fs';
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 
-import { Boid, updateAllBoids } from './boid/boid';
+import { Boid, vec3, updateAllBoids } from './boid/boid';
 
 // Configure the camera to look at the Boids
 const scene = new THREE.Scene();
@@ -25,17 +24,17 @@ for(let i = 0; i < numBoids; i++) {
 	const px = randPoint();
 	const py = randPoint();
 	const pz = randPoint();
-    const pos = new THREE.Vector3(px, py, pz);
+    const pos: vec3 = {x: px, y: py, z: pz};
     // random orientation (useless currently)
     const ox = 0; //randPoint();
     const oy = 0; //randPoint();
     const oz = 0; //randPoint();
-    const ori = new THREE.Vector3(ox, oy, oz);
+    const ori: vec3 = {x: ox, y: oy, z: oz};
     // random velocity
     const vx = randPoint();
     const vy = randPoint();
     const vz = randPoint();
-    const vel = new THREE.Vector3(vx, vy, vz);
+    const vel: vec3 = {x: vx, y: vy, z: vz};
     const boid: Boid = {label: i.toString(10), position: pos, orientation: ori, velocity: vel}
     boids.push(boid);
 }
@@ -150,19 +149,13 @@ const INV_MAX_FPS = 1 / 60;
 let frameDelta = 0;
 
 // Notes about what's next:
-// 0 - Get the website pointing here, and get the project on git
+// 0 - Get the website pointing here
 // 1 - Easier to control physical simulation
-//     -> start/stop functionality (space?)
 //     -> slowdown / speedup
 // 2 - Sliders for the swarming parameters
-// 3 - More performant physics updates
-// 4 - Collision avoidance and some obstacles
-// 5 - Oriented boids (in the direction of their velocity)
-// 6 - Skybox for easier viewing
-
-// Q - Is this simulation reversible?
-// A - Could we swap every boid's velocity and apply 
-//     the flocking rules in the opposite direction for those updates?
+// 3 - Collision avoidance and some obstacles
+// 4 - Oriented boids (in the direction of their velocity)
+// 5 - Skybox for easier viewing
 
 // Start Physics Clock
 clock.start();
