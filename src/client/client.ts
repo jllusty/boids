@@ -111,6 +111,22 @@ document.addEventListener("click", (event) => {
     }
 }, false);
 
+// if 'C' hide physics constants table
+document.addEventListener("keydown", (event) => {
+    const key = event.key;
+    const code = event.code;
+    if(key === 'c') {
+        let x = document.getElementById("info");
+        if(x?.style.display === "none") {
+            console.log('showing physics constants table');
+            x!.style.display = "block";
+        } else {
+            console.log('hiding physics constants table');
+            x!.style.display = "none";
+        }
+    }
+});
+
 // Each Boid is associated with a Mesh, though they should be separate objects
 const geometry = new THREE.BoxGeometry(1.0, 1.0, 1.0);
 const material = new THREE.MeshBasicMaterial( { color: 0x00ff00 } );
@@ -123,10 +139,11 @@ for(let i = 0; i < numBoids; i++) {
 }
 
 // limits of the playground mesh
+// TODO: hideable
 const playgroundGeometry = new THREE.SphereGeometry(100, 16, 12);
 const wireframe = new THREE.WireframeGeometry(playgroundGeometry);
 const line = new THREE.LineSegments(wireframe);
-scene.add(line);
+// scene.add(line);
 
 // Camera could be a Boid, that would be fun
 camera.position.x = 200.0;

@@ -8,8 +8,6 @@ export function cumulativeAverageUpdate(
   return currentAverage + deltaAverage;
 }
 
-
-
 // TODO(jllusty): scope with a 'declare namespace'
 // spatial indexing scheme
 export interface index {
@@ -106,20 +104,9 @@ export function getSpatialIndexOfBoid(gridParams: GridParameters, boid: Boid): i
   return spatialIndex(gridParams, boid.position);
 }
 
-// mutates grid
-export function addBoidToGrid(boid: Boid, g: Grid) {
-  //const spatialIndex = getSpatialIndexOfBoid(boid);
-  //if(!g.has(spatialIndex)) {
-   // g.set(spatialIndex, [boid]);
-  //}
-  //else {
-  //  g.get(spatialIndex)!.push(boid);
-  //}
-}
-
 // sometimes you realize that you should
 // just use a grid instead of a stupid
-// ES6 map
+// ES6 map (ಠ ͜ʖಠ)
 export function createGridFromBoids(gridParams: GridParameters, boids: Boid[]): Grid {
   let boids3Grid: Boid[][][][] = [];
 
@@ -135,6 +122,7 @@ export function createGridFromBoids(gridParams: GridParameters, boids: Boid[]): 
     }
   }
 
+  // TODO: compute cumulative average positions and velocities
   for(let i = 0; i < boids.length; ++i) {
     const ind = spatialIndex(gridParams, boids[i].position);
     boids3Grid[ind.i][ind.j][ind.k].push(boids[i]);
@@ -198,7 +186,6 @@ function updateAllBoids(boids: Boid[], dt: number) {
    
     // maintain separation from boids that are too close
     if(tooCloseBoids !== undefined && tooCloseBoids.length > 0 ) {
-      console.log('boid[' + i.toString() + '] has ' + tooCloseBoids.length.toString() + ' friends');
       // 1. separation: avoid colliding into other boids, move away from their average position
       const separationConstant = 0.05;
       const avgPositionTooCloseBoids: vec3 = averagePosition(tooCloseBoids);
@@ -229,19 +216,13 @@ function updateAllBoids(boids: Boid[], dt: number) {
       boids[i].velocity = minus(boids[i].velocity, scalarMultiply(normalize(boids[i].position), turnConstant));
     }
     
-    // if(boids[i].position < )0
-    // stay within the limits of the playground
-    // const turnConstant = 0.25;
-    // const boxSize = 100;
-    // if(length(boids[i].position) > boxSize) {
-    // boids[i].velocity = minus(boids[i].velocity, scalarMultiply(normalize(boids[i].position), turnConstant));
-    // }
-
     // limit velocity
-    const V = 20.0;
+    const V = 30.0;
     if(length(boids[i].velocity) > V) {
       boids[i].velocity = scalarMultiply(normalize(boids[i].velocity), V);
     }
+
+    // TODO: give them something moving to chase
 
     // step physics forward (integration step)
     update(boids[i], dt);
@@ -250,9 +231,6 @@ function updateAllBoids(boids: Boid[], dt: number) {
     if (r >= R) {
       boids[i].position = scalarMultiply(normalize(boids[i].position), R);
     }
-
-    // give them something to chase
-
 
   }
 }
