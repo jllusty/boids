@@ -56,4 +56,21 @@ describe("tests for the index and vec3 interfaces and functions", () => {
             expect(grid.boids[ind.i][ind.j][ind.k].find((b) => b.label === testBoids[i].label) !== undefined).toBeTruthy();
         }
     });
+    
+    // test that the cumulative average function works as expected by comparing an aggregate average after 
+    // N random observations
+    test("test cumulativeAverageUpdate", () => {
+        const eps = 0.001;
+        // test that the cumulative average is equal to the usual average at step N
+        const N = 100;
+        let aggregateAverage = 0;
+        let currentAverage = 0;
+        for(let i = 0; i < N; ++i) {
+            const x = Math.random();
+            aggregateAverage += x;
+            currentAverage = BOID.cumulativeAverageUpdate(currentAverage, i, x);
+        }
+        aggregateAverage /= N;
+        expect(Math.abs(currentAverage - aggregateAverage) < eps).toBeTruthy();
+    });
 });

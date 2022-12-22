@@ -1,9 +1,14 @@
-import { GridHelper } from "three";
-
-// simple export for testing unit testing
-export function sampleFunction(x: string): string {
-  return x + x;
+// statistical utility functions
+export function cumulativeAverageUpdate(
+  currentAverage: number, 
+  numCurrentObservations: number, 
+  newObservation: number): number
+{
+  const deltaAverage = (newObservation - currentAverage)/(numCurrentObservations + 1);
+  return currentAverage + deltaAverage;
 }
+
+
 
 // TODO(jllusty): scope with a 'declare namespace'
 // spatial indexing scheme
@@ -12,10 +17,6 @@ export interface index {
   j: number,
   k: number
 }
-
-//export function toString(spatialIndex: index): string {
-//  return "(" + spatialIndex.i.toString() + ", " + spatialIndex.j.toString() + ", " + spatialIndex.k.toString() + ")"
-//}
 
 // 3-d vector Datatype
 export interface vec3 {
@@ -175,16 +176,15 @@ const testGridParameters: GridParameters = {
     xMin: -100, xMax: 100,
     yMin: -100, yMax: 100,
     zMin: -100, zMax: 100,
-    xNumSegments: 20,
-    yNumSegments: 20,
-    zNumSegments: 20
+    xNumSegments: 50,
+    yNumSegments: 50,
+    zNumSegments: 50
 }
 
 // collective (global) boid update
 function updateAllBoids(boids: Boid[], dt: number) {
   // index each boid, rip performance
   const grid = createGridFromBoids(testGridParameters, boids);
-  //theGrid.forEach((boids,spatialIndex) => console.log(toString(spatialIndex) + ": " + boids.length.toString()));
 
   // update each boid 
   for(let i = 0; i < boids.length; ++i) {
@@ -192,7 +192,8 @@ function updateAllBoids(boids: Boid[], dt: number) {
     // TODO(jllusty): use created grid to discern boids that are too close
     const ind = getSpatialIndexOfBoid(testGridParameters, boids[i]);
     // get nearby boids
-    const nearbyBoids: Boid[] = grid.boids[ind.i][ind.j][ind.k]; // getBoidsNearBoid(boids, boids[i], 20.0);
+    //const nearbyBoids: Boid[] = grid.boids[ind.i][ind.j][ind.k];
+    const nearbyBoids: Boid[] = getBoidsNearBoid(boids, boids[i], 20.0);
     const tooCloseBoids: Boid[] = getBoidsNearBoid(boids, boids[i], 5.0);
    
     // maintain separation from boids that are too close
@@ -237,10 +238,10 @@ function updateAllBoids(boids: Boid[], dt: number) {
     // }
 
     // limit velocity
-    const V = 10.0;
-    //if(length(boids[i].velocity) > V) {
-    //  boids[i].velocity = scalarMultiply(normalize(boids[i].velocity), V);
-    //}
+    const V = 20.0;
+    if(length(boids[i].velocity) > V) {
+      boids[i].velocity = scalarMultiply(normalize(boids[i].velocity), V);
+    }
 
     // step physics forward (integration step)
     update(boids[i], dt);

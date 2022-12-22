@@ -15,7 +15,7 @@ document.body.appendChild( renderer.domElement );
 const controls = new OrbitControls( camera, renderer.domElement );
 
 // Create the boids :^)
-const numBoids = 256;
+const numBoids = 512;
 const width = 30.0;
 let boids: Boid[] = [];
 for(let i = 0; i < numBoids; i++) { 
