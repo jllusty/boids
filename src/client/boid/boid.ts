@@ -56,6 +56,24 @@ export function average(vecs: vec3[]): vec3 {
   return scalarDivide(vecs.reduce((acc,vec) => plus(acc,vec)), vecs.length);
 }
 
+export function cumulativeAverageUpdateVec3(
+  currentAverage: vec3,
+  numCurrentObservations: number,
+  newObservation: vec3): vec3
+{
+  // original average
+  const ox = currentAverage.x, oy = currentAverage.y, oz = currentAverage.z;
+  // new observation
+  const nx = newObservation.x, ny = newObservation.y, nz = newObservation.z;
+
+  // cumulative average in each dimension
+  return {
+    x: cumulativeAverageUpdate(ox, numCurrentObservations, nx),
+    y: cumulativeAverageUpdate(oy, numCurrentObservations, ny),
+    z: cumulativeAverageUpdate(oz, numCurrentObservations, nz)
+  }
+}
+
 export function spaceToIndex1d(xMin: number, xMax: number, xSegments: number, x: number): number {
   return Math.floor((xSegments - 1) * (x - xMin) / (xMax - xMin));
 }
@@ -95,7 +113,10 @@ export interface GridParameters {
 export interface Grid {
   gridParams: GridParameters,
   // querable 3d-grid array for array of boids
-  boids: Boid[][][][]
+  boids: Boid[][][][],
+  // queryable 3d-grid array for average positions and velocities
+  averagePositions: vec3[][][],
+  averageVelocities: vec3[][][]
 }
 
 // tests for these too would be pretty sick
@@ -109,28 +130,47 @@ export function getSpatialIndexOfBoid(gridParams: GridParameters, boid: Boid): i
 // ES6 map (ಠ ͜ʖಠ)
 export function createGridFromBoids(gridParams: GridParameters, boids: Boid[]): Grid {
   let boids3Grid: Boid[][][][] = [];
+  let averagePositions: vec3[][][] = [];
+  let averageVelocities: vec3[][][] = [];
 
   // this is probably a chunk of the time required for this function,
   // I wonder if there is a faster way 
   for(let i = 0; i < gridParams.xNumSegments; ++i) {
     boids3Grid[i] = [];
-    for(let j = 0; j < gridParams.xNumSegments; ++j) {
+    averagePositions[i] = [];
+    averageVelocities[i] = [];
+    for(let j = 0; j < gridParams.yNumSegments; ++j) {
       boids3Grid[i][j] = [];
-      for(let k = 0; k < gridParams.xNumSegments; ++k) {
+      averagePositions[i][j] = [];
+      averageVelocities[i][j] = [];
+      for(let k = 0; k < gridParams.zNumSegments; ++k) {
         boids3Grid[i][j][k] = [];
+        averagePositions[i][j][k] = {x: 0, y: 0, z: 0};
+        averageVelocities[i][j][k] = {x: 0, y: 0, z: 0};
       }
     }
   }
 
-  // TODO: compute cumulative average positions and velocities
   for(let i = 0; i < boids.length; ++i) {
     const ind = spatialIndex(gridParams, boids[i].position);
+    averagePositions[ind.i][ind.j][ind.k] = cumulativeAverageUpdateVec3(
+      averagePositions[ind.i][ind.j][ind.k],
+      boids3Grid[ind.i][ind.j][ind.k].length,
+      boids[i].position
+    )
+    averageVelocities[ind.i][ind.j][ind.k] = cumulativeAverageUpdateVec3(
+      averageVelocities[ind.i][ind.j][ind.k],
+      boids3Grid[ind.i][ind.j][ind.k].length,
+      boids[i].velocity
+    )
     boids3Grid[ind.i][ind.j][ind.k].push(boids[i]);
   }
 
   return {
     gridParams: gridParams, 
-    boids: boids3Grid
+    boids: boids3Grid,
+    averagePositions: averagePositions,
+    averageVelocities: averageVelocities
   };
 }
 

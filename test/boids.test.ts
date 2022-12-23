@@ -39,7 +39,8 @@ describe("tests for the index and vec3 interfaces and functions", () => {
     // test that the grid created with testGridParameters and
     // N=1000 random stationary boids contains all of the
     // boids in their respective cell
-    test("test create grid w/ N=1000 random points", () => {
+    test("test create grid w/ N=1000 boids at random positions", () => {
+        const eps = 0.001;
         // create N randomly-positioned, stationary boids
         const N = 1000;
         let testBoids: BOID.Boid[] = []
@@ -54,6 +55,35 @@ describe("tests for the index and vec3 interfaces and functions", () => {
         for(let i = 0; i < N; ++i) {
             let ind: BOID.index = BOID.getSpatialIndexOfBoid(testGridParameters, testBoids[i]);
             expect(grid.boids[ind.i][ind.j][ind.k].find((b) => b.label === testBoids[i].label) !== undefined).toBeTruthy();
+        }
+
+        // test that the boids contained in the grid at each spatial index have an average position and velocity
+        // that the grid returns for that index
+        for(let i = 0; i < grid.averagePositions.length; ++i) {
+            for(let j = 0; j < grid.averagePositions[i].length; ++j) {
+                for(let k = 0; k < grid.averagePositions[i][j].length; ++k) {
+                    // boids
+                    const boids: BOID.Boid[] = grid.boids[i][j][k];
+                    if(boids.length === 0) continue;
+
+                    // average their positions and velocities
+                    let averagePosition: BOID.vec3 = {x: 0, y: 0, z: 0};
+                    let averageVelocity: BOID.vec3 = {x: 0, y: 0, z: 0};
+                    for(let b = 0; b < boids.length; ++b) {
+                        averagePosition = BOID.plus(averagePosition, boids[b].position);
+                        averageVelocity = BOID.plus(averageVelocity, boids[b].velocity);
+                    }
+                    averagePosition = BOID.scalarDivide(averagePosition, boids.length);
+                    averageVelocity = BOID.scalarDivide(averageVelocity, boids.length);
+
+                    // indexed average position and velocity
+                    const indexedAveragePosition: BOID.vec3 = grid.averagePositions[i][j][k];
+                    const indexedAverageVelocity: BOID.vec3 = grid.averageVelocities[i][j][k];
+
+                    expect(BOID.length(BOID.minus(indexedAveragePosition,averagePosition)) < eps).toBeTruthy();
+                    expect(BOID.length(BOID.minus(indexedAverageVelocity,averageVelocity)) < eps).toBeTruthy();
+                }
+            }
         }
     });
     
@@ -72,5 +102,22 @@ describe("tests for the index and vec3 interfaces and functions", () => {
         }
         aggregateAverage /= N;
         expect(Math.abs(currentAverage - aggregateAverage) < eps).toBeTruthy();
+    });
+
+    // test cumulative average function for vec3
+    test("test cumulativeAverageUpdateVec3", () => {
+        const eps = 0.001;
+        const N = 100;
+        // test cumulative average on vec3
+        let aggregateAverage: BOID.vec3 = {x: 0, y: 0, z: 0};
+        let currentAverage: BOID.vec3 = {x: 0, y: 0, z: 0};
+        for(let i = 0; i < N; ++i) {
+            const rx = Math.random(), ry = Math.random(), rz = Math.random();
+            const rvec: BOID.vec3 = {x: rx, y: ry, z: rz};
+            aggregateAverage = BOID.plus(aggregateAverage, rvec);
+            currentAverage = BOID.cumulativeAverageUpdateVec3(currentAverage, i, rvec);
+        }
+        aggregateAverage = BOID.scalarDivide(aggregateAverage, N);
+        expect(BOID.length(BOID.minus(currentAverage,aggregateAverage)) < eps).toBeTruthy();
     });
 });

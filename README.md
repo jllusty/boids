@@ -12,7 +12,7 @@ In-browser playground for swarm intelligence.
 
 ## Development
 0. `git clone` this repository
-1. `npm run install`
+1. `npm install` the things
 2. Run tests w/ ts-lint: `npm run test`
 3. Run development on port 8081: `npm run dev`
 4. Make mistakes. `code .`
